@@ -4,7 +4,10 @@ import Empty from '@/app/_components/Empty'
 export const dynamic = 'force-dynamic'
 
 export default async function Dashboard() {
-  const rows = await getRecords()
+  const all = await getRecords()
+  // Keep the overview focused on core work — don't let the bulk-imported
+  // influencer roster flood the Total count or the "recent" table.
+  const rows = all.filter(r => r.category !== 'influencer')
   const open = rows.filter(r => STILL_OPEN.includes(r.status) && !NEW_CATS.includes(r.category ?? '')).length
   const pipeline = rows
     .filter(r => r.category && DEAL_CATS.includes(r.category) && !['done', 'lost'].includes(r.status))

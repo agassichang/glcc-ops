@@ -12,6 +12,7 @@ const TABS = [
   { href: '/projects', label: 'Projects' },
   { href: '/contacts', label: 'Contacts' },
   { href: '/content', label: 'Content' },
+  { href: '/influencers', label: 'Influencer Marketing' },
   { href: '/agents', label: 'Agents' },
 ]
 
