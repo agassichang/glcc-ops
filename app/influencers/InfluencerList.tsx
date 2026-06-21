@@ -63,29 +63,48 @@ function Platform({ label, base, raw, stats }: {
   )
 }
 
-function Sizing({ it }: { it: Influencer }) {
-  // Append a unit only when the cell is a bare number (the sheet is inconsistent —
-  // some cells already include "cm"/"inch").
-  const wu = (v: string, unit: string) => {
-    const s = real(v)
-    return s ? (/[a-z]/i.test(s) ? s : `${s} ${unit}`) : ''
-  }
-  const rows = ([
-    ['Height', wu(it.heightCm, 'cm')],
-    ['Weight', wu(it.weightKg, 'kg')],
-    ['Top size', real(it.sizeTop)],
-    ['Bottom size', real(it.sizeBottom)],
-    ['Bust', wu(it.bust, 'inch')],
-    ['Waist', wu(it.waist, 'inch')],
-    ['Hip', wu(it.hip, 'inch')],
-  ] as [string, string][]).filter(([, v]) => v)
-  if (rows.length === 0) return null
+const SIZE_FIELDS: [string, string, string][] = [
+  ['height_cm', 'Height', 'cm'],
+  ['weight_kg', 'Weight', 'kg'],
+  ['size_top', 'Top size', 'e.g. M'],
+  ['size_bottom', 'Bottom size', 'e.g. M'],
+  ['bust_in', 'Bust', 'inch'],
+  ['waist_in', 'Waist', 'inch'],
+  ['hip_in', 'Hip', 'inch'],
+]
+
+function SizingEditor({ id, vals, onChange, onSave, saving }: {
+  id: number
+  vals: Record<string, string>
+  onChange: (id: number, key: string, value: string) => void
+  onSave: (id: number) => void
+  saving: boolean
+}) {
   return (
     <>
       <div className="size-head">Sizing</div>
-      {rows.map(([l, v]) => (
-        <div className="pf" key={l}><span className="pf-label">{l}</span><span className="pf-val">{v}</span></div>
+      {SIZE_FIELDS.map(([key, label, ph]) => (
+        <div className="pf" key={key}>
+          <span className="pf-label">{label}</span>
+          <span className="pf-val ref-edit">
+            <input
+              className="ref-input"
+              value={vals[key] ?? ''}
+              onChange={e => onChange(id, key, e.target.value)}
+              placeholder={ph}
+              aria-label={label}
+            />
+          </span>
+        </div>
       ))}
+      <div className="pf">
+        <span className="pf-label" />
+        <span className="pf-val ref-edit">
+          <button className="ref-save" onClick={() => onSave(id)} disabled={saving}>
+            {saving ? '…' : 'Save sizing'}
+          </button>
+        </span>
+      </div>
     </>
   )
 }
@@ -107,6 +126,15 @@ export default function InfluencerList({ items }: { items: Influencer[] }) {
   )
   const [savingName, setSavingName] = useState<number | null>(null)
   const nameOf = (it: Influencer) => names[it.id] ?? it.name
+  const [sizes, setSizes] = useState<Record<number, Record<string, string>>>(
+    () => Object.fromEntries(items.map(i => [i.id, {
+      height_cm: i.heightCm, weight_kg: i.weightKg, size_top: i.sizeTop,
+      size_bottom: i.sizeBottom, bust_in: i.bust, waist_in: i.waist, hip_in: i.hip,
+    }]))
+  )
+  const [savingSize, setSavingSize] = useState<number | null>(null)
+  const onSizeChange = (id: number, key: string, value: string) =>
+    setSizes(s => ({ ...s, [id]: { ...s[id], [key]: value } }))
 
   const view = useMemo(() => {
     const nm = (i: Influencer) => (names[i.id] ?? i.name)
@@ -182,6 +210,23 @@ export default function InfluencerList({ items }: { items: Influencer[] }) {
     }
   }
 
+  async function saveSizing(id: number) {
+    setSavingSize(id)
+    try {
+      const res = await fetch('/api/influencer-update', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, sizing: sizes[id] ?? {} }),
+      })
+      const data = await res.json().catch(() => ({}))
+      if (!data.ok) throw new Error(data.reason || 'failed')
+    } catch {
+      alert('Could not save sizing — please try again.')
+    } finally {
+      setSavingSize(null)
+    }
+  }
+
   return (
     <>
       <div className="toolbar">
@@ -239,7 +284,7 @@ export default function InfluencerList({ items }: { items: Influencer[] }) {
                   <Platform label="TikTok" base="tiktok" raw={it.tiktok} stats={ttStats} />
                   <Platform label="YouTube" base="youtube" raw={it.youtube} stats={ytStats} />
                   {noPlatforms && <div className="pf"><span className="pf-val pf-empty">No platforms on file</span></div>}
-                  <Sizing it={it} />
+                  <SizingEditor id={it.id} vals={sizes[it.id] ?? {}} onChange={onSizeChange} onSave={saveSizing} saving={savingSize === it.id} />
                   <div className="pf">
                     <span className="pf-label">Referral Code</span>
                     <span className="pf-val ref-edit">

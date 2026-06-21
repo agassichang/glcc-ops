@@ -36,6 +36,17 @@ export async function POST(req: Request) {
     else delete meta.referral_code
   }
 
+  if (body.sizing && typeof body.sizing === 'object') {
+    const allowed = ['height_cm', 'weight_kg', 'size_top', 'size_bottom', 'bust_in', 'waist_in', 'hip_in']
+    for (const k of allowed) {
+      if (k in body.sizing) {
+        const v = String(body.sizing[k] ?? '').trim().slice(0, 32)
+        if (v) meta[k] = v
+        else delete meta[k]
+      }
+    }
+  }
+
   const patch: Record<string, any> = { meta }
   if ('name' in body) {
     const name = String(body.name ?? '').trim().slice(0, 200)
