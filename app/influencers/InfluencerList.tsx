@@ -78,10 +78,8 @@ export default function InfluencerList({ items }: { items: Influencer[] }) {
                 <Platform label="Instagram" base="instagram" raw={it.instagram} stats={igStats} />
                 <Platform label="TikTok" base="tiktok" raw={it.tiktok} stats={ttStats} />
                 <Platform label="YouTube" base="youtube" raw={it.youtube} stats={ytStats} />
-                {real(it.referralCode) && (
-                  <div className="pf"><span className="pf-label">Referral</span><span className="pf-val">{real(it.referralCode)}</span></div>
-                )}
                 {noPlatforms && <div className="pf"><span className="pf-val pf-empty">No platforms on file</span></div>}
+                <div className="pf"><span className="pf-label">Referral</span><span className="pf-val">{real(it.referralCode) || '—'}</span></div>
               </div>
             )}
           </div>
