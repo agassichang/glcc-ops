@@ -36,8 +36,15 @@ export async function POST(req: Request) {
     else delete meta.referral_code
   }
 
-  const { error: updErr } = await supabase.from('records').update({ meta }).eq('id', id)
+  const patch: Record<string, any> = { meta }
+  if ('name' in body) {
+    const name = String(body.name ?? '').trim().slice(0, 200)
+    if (!name) return Response.json({ ok: false, reason: 'bad_name' }, { status: 400 })
+    patch.title = name
+  }
+
+  const { error: updErr } = await supabase.from('records').update(patch).eq('id', id)
   if (updErr) return Response.json({ ok: false, reason: 'update_failed', error: updErr.message }, { status: 500 })
 
-  return Response.json({ ok: true, id, tier: meta.tier ?? null, referralCode: meta.referral_code ?? null })
+  return Response.json({ ok: true, id, name: patch.title, tier: meta.tier ?? null, referralCode: meta.referral_code ?? null })
 }

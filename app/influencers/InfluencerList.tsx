@@ -68,22 +68,28 @@ export default function InfluencerList({ items }: { items: Influencer[] }) {
     () => Object.fromEntries(items.map(i => [i.id, i.referralCode]))
   )
   const [savingRef, setSavingRef] = useState<number | null>(null)
+  const [names, setNames] = useState<Record<number, string>>(
+    () => Object.fromEntries(items.map(i => [i.id, i.name]))
+  )
+  const [savingName, setSavingName] = useState<number | null>(null)
+  const nameOf = (it: Influencer) => names[it.id] ?? it.name
 
   const view = useMemo(() => {
+    const nm = (i: Influencer) => (names[i.id] ?? i.name)
     const q = query.trim().toLowerCase()
-    let list = items.filter(i => !q || i.name.toLowerCase().includes(q))
+    let list = items.filter(i => !q || nm(i).toLowerCase().includes(q))
     if (sortBy === 'tier') {
       const rank = (id: number) => {
         const t = tiers[id]
         return t === 1 || t === 2 || t === 3 ? t : 99 // untiered last
       }
       list = [...list].sort((a, b) =>
-        rank(a.id) - rank(b.id) || a.name.localeCompare(b.name, undefined, { sensitivity: 'base' })
+        rank(a.id) - rank(b.id) || nm(a).localeCompare(nm(b), undefined, { sensitivity: 'base' })
       )
     }
     // sortBy 'name' keeps the server's A→Z order (others already sort after Z)
     return list
-  }, [items, query, sortBy, tiers])
+  }, [items, query, sortBy, tiers, names])
 
   async function setTier(id: number, value: string) {
     const tierVal = value === '' ? null : Number(value)
@@ -123,6 +129,25 @@ export default function InfluencerList({ items }: { items: Influencer[] }) {
     }
   }
 
+  async function saveName(id: number) {
+    const name = (names[id] ?? '').trim()
+    if (!name) { alert('Name cannot be empty.'); return }
+    setSavingName(id)
+    try {
+      const res = await fetch('/api/influencer-update', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, name }),
+      })
+      const data = await res.json().catch(() => ({}))
+      if (!data.ok) throw new Error(data.reason || 'failed')
+    } catch {
+      alert('Could not save the name — please try again.')
+    } finally {
+      setSavingName(null)
+    }
+  }
+
   return (
     <>
       <div className="toolbar">
@@ -154,7 +179,7 @@ export default function InfluencerList({ items }: { items: Influencer[] }) {
           return (
             <div className={`acc-item${isOpen ? ' open' : ''}`} key={it.id}>
               <button className="acc-head" onClick={() => setOpen(isOpen ? null : it.id)} aria-expanded={isOpen}>
-                <span className="acc-name">{it.name}</span>
+                <span className="acc-name">{nameOf(it)}</span>
                 <span className="acc-right">
                   {tier ? <span className={`tier-badge t${tier}`}>Tier {tier}</span> : null}
                   <span className="acc-caret" aria-hidden="true">{isOpen ? '–' : '+'}</span>
@@ -162,6 +187,20 @@ export default function InfluencerList({ items }: { items: Influencer[] }) {
               </button>
               {isOpen && (
                 <div className="acc-body">
+                  <div className="pf">
+                    <span className="pf-label">Name</span>
+                    <span className="pf-val ref-edit">
+                      <input
+                        className="ref-input"
+                        value={names[it.id] ?? ''}
+                        onChange={e => setNames(n => ({ ...n, [it.id]: e.target.value }))}
+                        aria-label="Edit name"
+                      />
+                      <button className="ref-save" onClick={() => saveName(it.id)} disabled={savingName === it.id}>
+                        {savingName === it.id ? '…' : 'Save'}
+                      </button>
+                    </span>
+                  </div>
                   <Platform label="Instagram" base="instagram" raw={it.instagram} stats={igStats} />
                   <Platform label="TikTok" base="tiktok" raw={it.tiktok} stats={ttStats} />
                   <Platform label="YouTube" base="youtube" raw={it.youtube} stats={ytStats} />
