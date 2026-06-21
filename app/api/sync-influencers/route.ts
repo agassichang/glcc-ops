@@ -33,6 +33,14 @@ export async function GET(req: Request) {
   }
   const parsed = parseCsv(await res.text())
 
+  // Preserve any manually-assigned tiers across re-sync (matched by name).
+  const { data: existing } = await supabase.from('records').select('title, meta').eq('category', 'influencer')
+  const tierByName = new Map<string, number>()
+  for (const e of existing ?? []) {
+    const t = Number((e.meta as any)?.tier)
+    if ([1, 2, 3].includes(t)) tierByName.set((e.title || '').trim().toLowerCase(), t)
+  }
+
   // Pull ONLY these safe columns. Anything not listed here (phone, DOB, email,
   // address, height, weight, measurements…) is never touched.
   const clean = (v?: string) => {
@@ -57,6 +65,12 @@ export async function GET(req: Request) {
       },
     }))
     .filter(r => r.title)
+
+  // Re-apply preserved tiers (by name) so re-syncing the sheet never loses them.
+  for (const rec of records) {
+    const t = tierByName.get(rec.title.toLowerCase())
+    if (t) (rec.meta as any).tier = t
+  }
 
   if (records.length === 0) {
     return Response.json({ ok: false, reason: 'no_rows', hint: 'Check the sheet has a header row with a "Name" column' }, { status: 400 })

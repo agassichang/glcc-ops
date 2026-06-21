@@ -64,6 +64,32 @@ code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0
 .pf-stats { color: var(--dim); }
 .pf-empty { color: var(--dim); }
 
+/* Toolbar: search + sort toggle (16px inputs so iOS doesn't zoom on focus). */
+.toolbar { display: flex; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
+.search {
+  flex: 1; min-width: 0; background: var(--surface); border: 1px solid var(--border);
+  border-radius: 9px; padding: 11px 13px; color: var(--text); font-size: 16px; font-family: inherit;
+}
+.search::placeholder { color: var(--dim); }
+.sortgroup { display: flex; border: 1px solid var(--border); border-radius: 9px; overflow: hidden; }
+.sortgroup button {
+  background: var(--surface); border: none; color: var(--muted); padding: 0 16px;
+  font-size: 14px; font-family: inherit; cursor: pointer; min-height: 44px;
+}
+.sortgroup button + button { border-left: 1px solid var(--border); }
+.sortgroup button.on { background: var(--surface2); color: var(--text); font-weight: 500; }
+
+/* Tier badge on the collapsed row + the in-app tier selector. */
+.acc-right { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+.tier-badge { font-size: 12px; font-weight: 600; padding: 2px 9px; border-radius: 999px; background: var(--surface2); color: var(--muted); }
+.tier-badge.t1 { background: rgba(245,158,11,0.18); color: #f5c451; }
+.tier-badge.t2 { background: rgba(55,138,221,0.16); color: #8ec5ff; }
+.tier-badge.t3 { background: rgba(29,158,117,0.16); color: #86e0b8; }
+.tier-select {
+  background: var(--surface2); border: 1px solid var(--border); border-radius: 8px;
+  color: var(--text); padding: 8px 10px; font-size: 16px; font-family: inherit; min-height: 40px;
+}
+
 .pill { display: inline-block; font-size: 12px; padding: 2px 9px; border-radius: 6px; font-weight: 500; background: var(--surface2); color: var(--muted); }
 .pill.open, .pill.new, .pill.contacted { background: rgba(55,138,221,0.16); color: #8ec5ff; }
 .pill.pending { background: rgba(239,159,39,0.16); color: #ffcf80; }

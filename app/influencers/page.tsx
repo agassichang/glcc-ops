@@ -59,6 +59,7 @@ export default async function Influencers() {
     ttLikes: r.meta?.tt_likes ?? '',
     ytFollowers: r.meta?.yt_followers ?? '',
     referralCode: refCode(r.title),
+    tier: [1, 2, 3].includes(Number(r.meta?.tier)) ? Number(r.meta?.tier) : null,
   }))
 
   return (
