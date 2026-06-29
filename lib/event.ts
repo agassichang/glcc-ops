@@ -10,6 +10,7 @@ export type Guest = {
   name: string
   phone: string
   category: string
+  tier: string
   company: string
   rsvp: string
   seatRow: string

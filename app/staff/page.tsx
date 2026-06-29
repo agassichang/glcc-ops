@@ -2,9 +2,10 @@
 import { useEffect, useMemo, useState } from 'react'
 
 type Guest = {
-  row: number; name: string; phone: string; category: string; company: string; rsvp: string
+  row: number; name: string; phone: string; category: string; tier: string; company: string; rsvp: string
   seatRow: string; seatNumber: string; entrance: string; checkedIn: boolean; checkInTime: string; remarks: string
 }
+type Cols = { tier?: boolean; entrance?: boolean; company?: boolean }
 
 export default function Staff() {
   const [guests, setGuests] = useState<Guest[]>([])
@@ -12,7 +13,9 @@ export default function Staff() {
   const [query, setQuery] = useState('')
   const [fRsvp, setFRsvp] = useState('')
   const [fCat, setFCat] = useState('')
+  const [fTier, setFTier] = useState('')
   const [fStatus, setFStatus] = useState<'' | 'in' | 'out'>('')
+  const [cols, setCols] = useState<Cols>({})
   const [drafts, setDrafts] = useState<Record<number, Partial<Guest>>>({})
   const [saving, setSaving] = useState<number | null>(null)
 
@@ -22,7 +25,7 @@ export default function Staff() {
     try {
       const res = await fetch('/api/event/list')
       const data = await res.json().catch(() => ({}))
-      if (data.ok && Array.isArray(data.guests)) { setGuests(data.guests); setLoad('ready') }
+      if (data.ok && Array.isArray(data.guests)) { setGuests(data.guests); setCols(data.cols || {}); setLoad('ready') }
       else if (data.reason === 'not_configured') setLoad('unconfigured')
       else setLoad('error')
     } catch { setLoad('error') }
@@ -36,6 +39,7 @@ export default function Staff() {
 
   const categories = useMemo(() => [...new Set(guests.map(g => g.category).filter(Boolean))].sort(), [guests])
   const rsvps = useMemo(() => [...new Set(guests.map(g => g.rsvp).filter(Boolean))].sort(), [guests])
+  const tiers = useMemo(() => [...new Set(guests.map(g => g.tier).filter(Boolean))].sort(), [guests])
 
   const view = useMemo(() => {
     const q = query.trim().toLowerCase()
@@ -43,11 +47,12 @@ export default function Staff() {
       if (q && !`${g.name} ${g.phone} ${g.company} ${g.category}`.toLowerCase().includes(q)) return false
       if (fRsvp && g.rsvp !== fRsvp) return false
       if (fCat && g.category !== fCat) return false
+      if (fTier && g.tier !== fTier) return false
       if (fStatus === 'in' && !g.checkedIn) return false
       if (fStatus === 'out' && g.checkedIn) return false
       return true
     })
-  }, [guests, query, fRsvp, fCat, fStatus])
+  }, [guests, query, fRsvp, fCat, fTier, fStatus])
 
   const draftOf = (g: Guest) => ({ seatRow: g.seatRow, seatNumber: g.seatNumber, entrance: g.entrance, remarks: g.remarks, ...drafts[g.row] })
   const setField = (row: number, key: string, val: string) => setDrafts(d => ({ ...d, [row]: { ...d[row], [key]: val } }))
@@ -108,6 +113,12 @@ export default function Staff() {
                 <option value="">All categories</option>
                 {categories.map(c => <option key={c} value={c}>{c}</option>)}
               </select>
+              {tiers.length > 0 && (
+                <select className="cos-field cos-select" value={fTier} onChange={e => setFTier(e.target.value)}>
+                  <option value="">All tiers</option>
+                  {tiers.map(t => <option key={t} value={t}>Tier {t}</option>)}
+                </select>
+              )}
               <select className="cos-field cos-select" value={fStatus} onChange={e => setFStatus(e.target.value as any)}>
                 <option value="">All statuses</option>
                 <option value="in">Checked in</option>
@@ -126,7 +137,7 @@ export default function Staff() {
                       <div>
                         <p className="staff-name">{g.name || '—'}</p>
                         <p className="staff-sub">
-                          {g.category || '—'}{g.company ? ` · ${g.company}` : ''} · +{g.phone}
+                          {g.category || '—'}{g.tier ? ` · Tier ${g.tier}` : ''}{g.company ? ` · ${g.company}` : ''} · +{g.phone}
                           {g.rsvp ? ` · RSVP ${g.rsvp}` : ''}
                         </p>
                       </div>
@@ -144,7 +155,7 @@ export default function Staff() {
                     <div className="staff-grid">
                       <label>Seat Row<input className="cos-field" value={d.seatRow ?? ''} onChange={e => setField(g.row, 'seatRow', e.target.value)} /></label>
                       <label>Seat No.<input className="cos-field" value={d.seatNumber ?? ''} onChange={e => setField(g.row, 'seatNumber', e.target.value)} /></label>
-                      <label>Entrance<input className="cos-field" value={d.entrance ?? ''} onChange={e => setField(g.row, 'entrance', e.target.value)} /></label>
+                      {cols.entrance && <label>Entrance<input className="cos-field" value={d.entrance ?? ''} onChange={e => setField(g.row, 'entrance', e.target.value)} /></label>}
                       <label className="staff-remarks">Remarks<input className="cos-field" value={d.remarks ?? ''} onChange={e => setField(g.row, 'remarks', e.target.value)} /></label>
                     </div>
 

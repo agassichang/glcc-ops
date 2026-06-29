@@ -1,21 +1,16 @@
 /**
  * What To Wear Fashion Show — check-in backend (Google Apps Script).
  *
- * SETUP
- * 1. Open your guest Google Sheet → Extensions → Apps Script.
- * 2. Delete any sample code, paste this whole file.
- * 3. Set TOKEN below to a long random secret (must match EVENT_SHEET_TOKEN in Vercel).
- * 4. Set SHEET_NAME to your tab name (default "Guests").
- * 5. Deploy → New deployment → type "Web app" →
- *      Execute as: Me   |   Who has access: Anyone
- *    → Deploy → copy the Web app URL.
- * 6. In Vercel add env vars: EVENT_SHEET_WEBHOOK_URL = that URL,
- *    EVENT_SHEET_TOKEN = the same token. Redeploy.
+ * SETUP: Sheet → Extensions → Apps Script → paste this → Save.
+ * Deploy → Manage deployments → edit (pencil) → Version: New version → Deploy.
+ * (Same Web app URL stays.) Then add EVENT_SHEET_WEBHOOK_URL + EVENT_SHEET_TOKEN in Vercel.
  *
- * The token keeps the sheet private — only your server (which holds the token)
- * can read/write. The token is never sent to the browser.
+ * Robust to: a title/blank rows above the header (it finds the header row),
+ * and to your column set (Category, Full Name, Phone Number, Tier, RSVP Status,
+ * Seat Row, Seat Number, Checked In, Check In Time, Remarks). Entrance / Company
+ * are optional — used only if those columns exist.
  */
-const TOKEN = 'CHANGE_ME_TO_A_LONG_RANDOM_SECRET';
+const TOKEN = 'wtw_evt_3f9a2c7e1b8d4056f1a9c4e7b2d85f60';
 const SHEET_NAME = 'Guests';
 
 function doGet(e) { return handle(e); }
@@ -25,16 +20,21 @@ function handle(e) {
   try {
     var params = (e && e.parameter) || {};
     var body = {};
-    if (e && e.postData && e.postData.contents) {
-      try { body = JSON.parse(e.postData.contents); } catch (x) {}
-    }
+    if (e && e.postData && e.postData.contents) { try { body = JSON.parse(e.postData.contents); } catch (x) {} }
     var p = Object.assign({}, params, body);
     if (String(p.token || '') !== TOKEN) return json({ ok: false, error: 'unauthorized' });
 
     var ss = SpreadsheetApp.getActiveSpreadsheet();
     var sheet = ss.getSheetByName(SHEET_NAME) || ss.getSheets()[0];
     var values = sheet.getDataRange().getValues();
-    var header = values[0].map(function (h) { return String(h).trim().toLowerCase(); });
+
+    // Find the header row (first row that contains a phone/name header).
+    var hRow = 0;
+    for (var hr = 0; hr < Math.min(values.length, 20); hr++) {
+      var lc = values[hr].map(function (c) { return String(c).trim().toLowerCase(); });
+      if (lc.indexOf('phone number') >= 0 || lc.indexOf('phone') >= 0 || lc.indexOf('full name') >= 0) { hRow = hr; break; }
+    }
+    var header = values[hRow].map(function (h) { return String(h).trim().toLowerCase(); });
     var col = {};
     header.forEach(function (h, i) { col[h] = i; });
 
@@ -42,6 +42,7 @@ function handle(e) {
       name: findCol(col, ['full name', 'name']),
       phone: findCol(col, ['phone number', 'phone']),
       category: findCol(col, ['category']),
+      tier: findCol(col, ['tier']),
       company: findCol(col, ['company / brand (if applicable)', 'company / brand', 'company', 'brand']),
       rsvp: findCol(col, ['rsvp status', 'rsvp']),
       seatRow: findCol(col, ['seat row', 'row']),
@@ -58,6 +59,7 @@ function handle(e) {
         name: get(r, idx.name),
         phone: digits(get(r, idx.phone)),
         category: get(r, idx.category),
+        tier: get(r, idx.tier),
         company: get(r, idx.company),
         rsvp: get(r, idx.rsvp),
         seatRow: get(r, idx.seatRow),
@@ -73,17 +75,17 @@ function handle(e) {
 
     if (action === 'list') {
       var guests = [];
-      for (var i = 1; i < values.length; i++) {
-        if (values[i].join('').trim() === '') continue;
+      for (var i = hRow + 1; i < values.length; i++) {
+        if (idx.name >= 0 ? String(values[i][idx.name]).trim() === '' : values[i].join('').trim() === '') continue;
         guests.push(rowObj(values[i], i + 1));
       }
-      return json({ ok: true, guests: guests });
+      return json({ ok: true, guests: guests, cols: { tier: idx.tier >= 0, entrance: idx.entrance >= 0, company: idx.company >= 0 } });
     }
 
     if (action === 'checkin') {
       var target = digits(p.phone);
       if (!target) return json({ ok: false, error: 'no_phone' });
-      for (var j = 1; j < values.length; j++) {
+      for (var j = hRow + 1; j < values.length; j++) {
         if (digits(values[j][idx.phone]) === target) {
           var rowNumber = j + 1;
           var already = /^(yes|true|y|1)$/i.test(String(values[j][idx.checkedIn]).trim());
@@ -100,7 +102,7 @@ function handle(e) {
 
     if (action === 'update') {
       var rowNumber2 = parseInt(p.row, 10);
-      if (!rowNumber2 || rowNumber2 < 2) return json({ ok: false, error: 'bad_row' });
+      if (!rowNumber2 || rowNumber2 <= hRow + 1 - 1) return json({ ok: false, error: 'bad_row' });
       var fields = p.fields || {};
       var map = { seatRow: idx.seatRow, seatNumber: idx.seatNo, entrance: idx.entrance, remarks: idx.remarks, checkedIn: idx.checkedIn };
       Object.keys(fields).forEach(function (k) {
