@@ -14,7 +14,7 @@ const OPEN = [
   '/api/shopify-sales',
   '/api/sync-influencers',
   // Public guest check-in (the staff dashboard /staff stays gated).
-  '/checkin',
+  '/WTW-KLFW26-Check-In',
   '/api/event/checkin',
 ]
 
@@ -26,6 +26,13 @@ export async function middleware(req: NextRequest) {
   // to /login and fail to load.
   if (/\.(png|jpe?g|gif|svg|webp|avif|ico|css|js|mjs|woff2?|ttf|otf|map|txt|xml|json|webmanifest)$/i.test(pathname)) {
     return NextResponse.next()
+  }
+
+  // The check-in page moved to a branded path — keep the old link working.
+  if (pathname === '/checkin') {
+    const url = req.nextUrl.clone()
+    url.pathname = '/WTW-KLFW26-Check-In'
+    return NextResponse.redirect(url)
   }
 
   if (OPEN.some(p => pathname === p || pathname.startsWith(p + '/'))) {
