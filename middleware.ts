@@ -20,6 +20,14 @@ const OPEN = [
 
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl
+
+  // Static assets in /public (images, fonts, etc.) are always public — never
+  // gate them, or things like the check-in page's header image get redirected
+  // to /login and fail to load.
+  if (/\.(png|jpe?g|gif|svg|webp|avif|ico|css|js|mjs|woff2?|ttf|otf|map|txt|xml|json|webmanifest)$/i.test(pathname)) {
+    return NextResponse.next()
+  }
+
   if (OPEN.some(p => pathname === p || pathname.startsWith(p + '/'))) {
     return NextResponse.next()
   }
