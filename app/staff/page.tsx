@@ -15,7 +15,6 @@ export default function Staff() {
   const [fCat, setFCat] = useState('')
   const [fTier, setFTier] = useState('')
   const [fStatus, setFStatus] = useState<'' | 'in' | 'out'>('')
-  const [cols, setCols] = useState<Cols>({})
   const [drafts, setDrafts] = useState<Record<number, Partial<Guest>>>({})
   const [saving, setSaving] = useState<number | null>(null)
 
@@ -25,7 +24,7 @@ export default function Staff() {
     try {
       const res = await fetch('/api/event/list')
       const data = await res.json().catch(() => ({}))
-      if (data.ok && Array.isArray(data.guests)) { setGuests(data.guests); setCols(data.cols || {}); setLoad('ready') }
+      if (data.ok && Array.isArray(data.guests)) { setGuests(data.guests); setLoad('ready') }
       else if (data.reason === 'not_configured') setLoad('unconfigured')
       else setLoad('error')
     } catch { setLoad('error') }
@@ -155,7 +154,6 @@ export default function Staff() {
                     <div className="staff-grid">
                       <label>Seat Row<input className="cos-field" value={d.seatRow ?? ''} onChange={e => setField(g.row, 'seatRow', e.target.value)} /></label>
                       <label>Seat No.<input className="cos-field" value={d.seatNumber ?? ''} onChange={e => setField(g.row, 'seatNumber', e.target.value)} /></label>
-                      {cols.entrance && <label>Entrance<input className="cos-field" value={d.entrance ?? ''} onChange={e => setField(g.row, 'entrance', e.target.value)} /></label>}
                       <label className="staff-remarks">Remarks<input className="cos-field" value={d.remarks ?? ''} onChange={e => setField(g.row, 'remarks', e.target.value)} /></label>
                     </div>
 

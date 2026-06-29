@@ -53,7 +53,6 @@ export default function CheckIn() {
             <dl className="cos-dl">
               <div><dt>Seat Row</dt><dd>{guest.seatRow || '—'}</dd></div>
               <div><dt>Seat Number</dt><dd>{guest.seatNumber || '—'}</dd></div>
-              {guest.entrance ? <div><dt>Entrance</dt><dd>{guest.entrance}</dd></div> : null}
             </dl>
             <button className="cos-btn cos-btn-ghost" onClick={reset}>Check in another guest</button>
           </div>
