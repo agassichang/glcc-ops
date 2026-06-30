@@ -53,8 +53,8 @@ export default function CheckIn() {
 
         <p className="wtw-meta">
           Show Date — 4 August 2026<br />
-          Show Time — 2PM Sharp<br />
-          Guest Arrival — 1PM
+          Show Time — 3PM Sharp<br />
+          Guest Arrival — 2PM
         </p>
 
         {status === 'found' && guest ? (
