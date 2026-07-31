@@ -11,7 +11,7 @@ export async function POST(req: Request) {
   const row = Number(body?.row)
   if (!Number.isInteger(row) || row < 2) return Response.json({ ok: false, reason: 'bad_row' }, { status: 400 })
 
-  const allowed = ['seatRow', 'seatNumber', 'entrance', 'remarks', 'checkedIn']
+  const allowed = ['seatRow', 'seatNumber', 'entrance', 'plusOne', 'remarks', 'checkedIn']
   const fields: Record<string, any> = {}
   for (const k of allowed) if (body?.fields && k in body.fields) fields[k] = body.fields[k]
   if (Object.keys(fields).length === 0) return Response.json({ ok: false, reason: 'no_fields' }, { status: 400 })
