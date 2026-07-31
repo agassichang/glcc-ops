@@ -1,5 +1,5 @@
 // Server-only bridge to the event Google Sheet (via its Apps Script web app).
-// The script URL + token live in env vars and never reach the browser — pages
+// The script URL + token live in env vars and never reach the browser ‚Äî pages
 // talk to our own /api/event/* routes, which call this.
 const SCRIPT_URL = process.env.EVENT_SHEET_WEBHOOK_URL?.trim() || ''
 const SCRIPT_TOKEN = process.env.EVENT_SHEET_TOKEN?.trim() || ''
@@ -16,9 +16,17 @@ export type Guest = {
   seatRow: string
   seatNumber: string
   entrance: string
+  plusOne: string
   checkedIn: boolean
   checkInTime: string
   remarks: string
+}
+
+// A guest counts as bringing a plus one unless the cell is blank or an explicit
+// negative. Anything else (Yes, 1, or the companion's name) counts.
+export const hasPlusOne = (v: unknown) => {
+  const s = String(v ?? '').trim().toLowerCase()
+  return s !== '' && !['no', 'n', '0', 'false', 'none', 'nil', '-', '‚Äî'].includes(s)
 }
 
 async function post(payload: Record<string, any>) {
