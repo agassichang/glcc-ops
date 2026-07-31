@@ -1,11 +1,13 @@
 'use client'
 import { useEffect, useMemo, useState } from 'react'
 
+import { hasPlusOne } from '@/lib/event'
+
 type Guest = {
   row: number; name: string; phone: string; category: string; tier: string; company: string; rsvp: string
-  seatRow: string; seatNumber: string; entrance: string; checkedIn: boolean; checkInTime: string; remarks: string
+  seatRow: string; seatNumber: string; entrance: string; plusOne: string
+  checkedIn: boolean; checkInTime: string; remarks: string
 }
-type Cols = { tier?: boolean; entrance?: boolean; company?: boolean }
 
 export default function Staff() {
   const [guests, setGuests] = useState<Guest[]>([])
@@ -15,6 +17,7 @@ export default function Staff() {
   const [fCat, setFCat] = useState('')
   const [fTier, setFTier] = useState('')
   const [fStatus, setFStatus] = useState<'' | 'in' | 'out'>('')
+  const [fPlus, setFPlus] = useState(false)
   const [drafts, setDrafts] = useState<Record<number, Partial<Guest>>>({})
   const [saving, setSaving] = useState<number | null>(null)
 
@@ -33,7 +36,8 @@ export default function Staff() {
   const stats = useMemo(() => {
     const total = guests.length
     const checked = guests.filter(g => g.checkedIn).length
-    return { total, checked, notArrived: total - checked }
+    const plusOnes = guests.filter(g => hasPlusOne(g.plusOne)).length
+    return { total, checked, notArrived: total - checked, plusOnes, heads: total + plusOnes }
   }, [guests])
 
   const categories = useMemo(() => [...new Set(guests.map(g => g.category).filter(Boolean))].sort(), [guests])
@@ -49,18 +53,19 @@ export default function Staff() {
       if (fTier && g.tier !== fTier) return false
       if (fStatus === 'in' && !g.checkedIn) return false
       if (fStatus === 'out' && g.checkedIn) return false
+      if (fPlus && !hasPlusOne(g.plusOne)) return false
       return true
     })
-  }, [guests, query, fRsvp, fCat, fTier, fStatus])
+  }, [guests, query, fRsvp, fCat, fTier, fStatus, fPlus])
 
-  const draftOf = (g: Guest) => ({ seatRow: g.seatRow, seatNumber: g.seatNumber, entrance: g.entrance, remarks: g.remarks, ...drafts[g.row] })
+  const draftOf = (g: Guest) => ({ seatRow: g.seatRow, seatNumber: g.seatNumber, plusOne: g.plusOne, remarks: g.remarks, ...drafts[g.row] })
   const setField = (row: number, key: string, val: string) => setDrafts(d => ({ ...d, [row]: { ...d[row], [key]: val } }))
   const dirty = (row: number) => !!drafts[row]
 
   async function save(g: Guest, extra: Record<string, any> = {}) {
     setSaving(g.row)
     const d = draftOf(g)
-    const fields = { seatRow: d.seatRow, seatNumber: d.seatNumber, entrance: d.entrance, remarks: d.remarks, ...extra }
+    const fields = { seatRow: d.seatRow, seatNumber: d.seatNumber, plusOne: d.plusOne, remarks: d.remarks, ...extra }
     try {
       const res = await fetch('/api/event/update', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -70,7 +75,7 @@ export default function Staff() {
       if (!data.ok || !data.guest) throw new Error()
       setGuests(gs => gs.map(x => (x.row === g.row ? data.guest : x)))
       setDrafts(dd => { const c = { ...dd }; delete c[g.row]; return c })
-    } catch { alert('Could not save — please try again.') }
+    } catch { alert('Could not save ‚Äî please try again.') }
     finally { setSaving(null) }
   }
 
@@ -79,7 +84,7 @@ export default function Staff() {
       <div className="cos-wide">
         <header className="staff-head">
           <div>
-            <p className="cos-kicker">What To Wear · Fashion Show</p>
+            <p className="cos-kicker">What To Wear ¬∑ Fashion Show</p>
             <h1 className="cos-h2">Staff Dashboard</h1>
           </div>
           <div className="staff-headbtns">
@@ -92,18 +97,21 @@ export default function Staff() {
           <div className="cos-stat"><span className="cos-stat-n">{stats.total}</span><span className="cos-stat-l">Total guests</span></div>
           <div className="cos-stat"><span className="cos-stat-n">{stats.checked}</span><span className="cos-stat-l">Checked in</span></div>
           <div className="cos-stat"><span className="cos-stat-n">{stats.notArrived}</span><span className="cos-stat-l">Not arrived</span></div>
+          {stats.plusOnes > 0 && (
+            <div className="cos-stat"><span className="cos-stat-n">{stats.heads}</span><span className="cos-stat-l">Total seats (+{stats.plusOnes})</span></div>
+          )}
         </div>
 
         {load === 'unconfigured' ? (
-          <p className="cos-note">Connect your guest sheet first — add <code>EVENT_SHEET_WEBHOOK_URL</code> and <code>EVENT_SHEET_TOKEN</code> in Vercel, then redeploy.</p>
+          <p className="cos-note">Connect your guest sheet first ‚Äî add <code>EVENT_SHEET_WEBHOOK_URL</code> and <code>EVENT_SHEET_TOKEN</code> in Vercel, then redeploy.</p>
         ) : load === 'error' ? (
-          <p className="cos-note">Couldn’t load the guest list. <button className="cos-link" onClick={refresh}>Retry</button></p>
+          <p className="cos-note">Couldn‚Äôt load the guest list. <button className="cos-link" onClick={refresh}>Retry</button></p>
         ) : load === 'loading' ? (
-          <p className="cos-note">Loading guests…</p>
+          <p className="cos-note">Loading guests‚Ä¶</p>
         ) : (
           <>
             <div className="staff-tools">
-              <input className="cos-field" placeholder="Search name, phone, company, category…" value={query} onChange={e => setQuery(e.target.value)} />
+              <input className="cos-field" placeholder="Search name, phone, company, category‚Ä¶" value={query} onChange={e => setQuery(e.target.value)} />
               <select className="cos-field cos-select" value={fRsvp} onChange={e => setFRsvp(e.target.value)}>
                 <option value="">All RSVP</option>
                 {rsvps.map(r => <option key={r} value={r}>{r}</option>)}
@@ -123,6 +131,11 @@ export default function Staff() {
                 <option value="in">Checked in</option>
                 <option value="out">Not arrived</option>
               </select>
+              {stats.plusOnes > 0 && (
+                <button type="button" className={`plus1-filter${fPlus ? ' is-on' : ''}`} onClick={() => setFPlus(v => !v)}>
+                  +1 only
+                </button>
+              )}
             </div>
 
             <p className="cos-count">{view.length} of {guests.length} guests</p>
@@ -134,10 +147,13 @@ export default function Staff() {
                   <div className={`staff-card${g.checkedIn ? ' is-in' : ''}`} key={g.row}>
                     <div className="staff-top">
                       <div>
-                        <p className="staff-name">{g.name || '—'}</p>
+                        <p className="staff-name">
+                          {g.name || '‚Äî'}
+                          {hasPlusOne(g.plusOne) && <span className="plus1" title="Bringing a plus one">+1</span>}
+                        </p>
                         <p className="staff-sub">
-                          {g.category || '—'}{g.tier ? ` · Tier ${g.tier}` : ''}{g.company ? ` · ${g.company}` : ''} · +{g.phone}
-                          {g.rsvp ? ` · RSVP ${g.rsvp}` : ''}
+                          {g.category || '‚Äî'}{g.tier ? ` ¬∑ Tier ${g.tier}` : ''}{g.company ? ` ¬∑ ${g.company}` : ''} ¬∑ +{g.phone}
+                          {g.rsvp ? ` ¬∑ RSVP ${g.rsvp}` : ''}
                         </p>
                       </div>
                       <button
@@ -149,18 +165,19 @@ export default function Staff() {
                       </button>
                     </div>
 
-                    {g.checkedIn && <p className="staff-in">Checked in{g.checkInTime ? ` · ${g.checkInTime}` : ''}</p>}
+                    {g.checkedIn && <p className="staff-in">Checked in{g.checkInTime ? ` ¬∑ ${g.checkInTime}` : ''}</p>}
 
                     <div className="staff-grid">
                       <label>Seat Row<input className="cos-field" value={d.seatRow ?? ''} onChange={e => setField(g.row, 'seatRow', e.target.value)} /></label>
                       <label>Seat No.<input className="cos-field" value={d.seatNumber ?? ''} onChange={e => setField(g.row, 'seatNumber', e.target.value)} /></label>
+                      <label className="staff-plusone">Plus One<input className="cos-field" placeholder="Name or Yes" value={d.plusOne ?? ''} onChange={e => setField(g.row, 'plusOne', e.target.value)} /></label>
                       <label className="staff-remarks">Remarks<input className="cos-field" value={d.remarks ?? ''} onChange={e => setField(g.row, 'remarks', e.target.value)} /></label>
                     </div>
 
                     {dirty(g.row) && (
                       <div className="staff-save">
                         <button className="cos-btn cos-sm" onClick={() => save(g)} disabled={saving === g.row}>
-                          {saving === g.row ? 'Saving…' : 'Save changes'}
+                          {saving === g.row ? 'Saving‚Ä¶' : 'Save changes'}
                         </button>
                       </div>
                     )}
