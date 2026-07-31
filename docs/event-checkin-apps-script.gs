@@ -1,14 +1,14 @@
 /**
- * What To Wear Fashion Show ‚Äî check-in backend (Google Apps Script).
+ * What To Wear Fashion Show — check-in backend (Google Apps Script).
  *
- * SETUP: Sheet ‚Üí Extensions ‚Üí Apps Script ‚Üí paste this ‚Üí Save.
- * Deploy ‚Üí Manage deployments ‚Üí edit (pencil) ‚Üí Version: New version ‚Üí Deploy.
+ * SETUP: Sheet → Extensions → Apps Script → paste this → Save.
+ * Deploy → Manage deployments → edit (pencil) → Version: New version → Deploy.
  * (Same Web app URL stays.) Then add EVENT_SHEET_WEBHOOK_URL + EVENT_SHEET_TOKEN in Vercel.
  *
  * Robust to: a title/blank rows above the header (it finds the header row),
  * and to your column set (Category, Full Name, Phone Number, Tier, RSVP Status,
  * Seat Row, Seat Number, Checked In, Check In Time, Remarks). Entrance / Company
- * are optional ‚Äî used only if those columns exist.
+ * are optional — used only if those columns exist.
  */
 const TOKEN = 'wtw_evt_3f9a2c7e1b8d4056f1a9c4e7b2d85f60';
 // Pinned explicitly so the script always reads the live guest list, no matter
