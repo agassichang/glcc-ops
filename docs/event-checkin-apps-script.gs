@@ -1,16 +1,19 @@
 /**
- * What To Wear Fashion Show — check-in backend (Google Apps Script).
+ * What To Wear Fashion Show ‚Äî check-in backend (Google Apps Script).
  *
- * SETUP: Sheet → Extensions → Apps Script → paste this → Save.
- * Deploy → Manage deployments → edit (pencil) → Version: New version → Deploy.
+ * SETUP: Sheet ‚Üí Extensions ‚Üí Apps Script ‚Üí paste this ‚Üí Save.
+ * Deploy ‚Üí Manage deployments ‚Üí edit (pencil) ‚Üí Version: New version ‚Üí Deploy.
  * (Same Web app URL stays.) Then add EVENT_SHEET_WEBHOOK_URL + EVENT_SHEET_TOKEN in Vercel.
  *
  * Robust to: a title/blank rows above the header (it finds the header row),
  * and to your column set (Category, Full Name, Phone Number, Tier, RSVP Status,
  * Seat Row, Seat Number, Checked In, Check In Time, Remarks). Entrance / Company
- * are optional — used only if those columns exist.
+ * are optional ‚Äî used only if those columns exist.
  */
 const TOKEN = 'wtw_evt_3f9a2c7e1b8d4056f1a9c4e7b2d85f60';
+// Pinned explicitly so the script always reads the live guest list, no matter
+// which spreadsheet the script file itself happens to live in.
+const SPREADSHEET_ID = '1AQyeMs5OCFRcLg71ltjFPtFE5QDR1RrsSX7I9zZ2bN4';
 const SHEET_NAME = 'Guests';
 
 function doGet(e) { return handle(e); }
@@ -24,7 +27,7 @@ function handle(e) {
     var p = Object.assign({}, params, body);
     if (String(p.token || '') !== TOKEN) return json({ ok: false, error: 'unauthorized' });
 
-    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    var ss = SpreadsheetApp.openById(SPREADSHEET_ID);
     var sheet = ss.getSheetByName(SHEET_NAME) || ss.getSheets()[0];
     var values = sheet.getDataRange().getValues();
 
@@ -48,6 +51,7 @@ function handle(e) {
       seatRow: findCol(col, ['seat row', 'row']),
       seatNo: findCol(col, ['seat number', 'seat no', 'seat']),
       entrance: findCol(col, ['entrance']),
+      plusOne: findCol(col, ['plus one', 'plus 1', 'plusone', '+1', 'plus one name', 'bringing plus one']),
       checkedIn: findCol(col, ['checked in', 'checkedin']),
       checkInTime: findCol(col, ['check in time', 'checkin time']),
       remarks: findCol(col, ['remarks', 'remark'])
@@ -65,6 +69,7 @@ function handle(e) {
         seatRow: get(r, idx.seatRow),
         seatNumber: get(r, idx.seatNo),
         entrance: get(r, idx.entrance),
+        plusOne: get(r, idx.plusOne),
         checkedIn: /^(yes|true|y|1)$/i.test(get(r, idx.checkedIn)),
         checkInTime: get(r, idx.checkInTime),
         remarks: get(r, idx.remarks)
@@ -79,7 +84,7 @@ function handle(e) {
         if (idx.name >= 0 ? String(values[i][idx.name]).trim() === '' : values[i].join('').trim() === '') continue;
         guests.push(rowObj(values[i], i + 1));
       }
-      return json({ ok: true, guests: guests, cols: { tier: idx.tier >= 0, entrance: idx.entrance >= 0, company: idx.company >= 0 } });
+      return json({ ok: true, guests: guests, cols: { tier: idx.tier >= 0, entrance: idx.entrance >= 0, company: idx.company >= 0, plusOne: idx.plusOne >= 0 } });
     }
 
     if (action === 'checkin') {
@@ -104,7 +109,7 @@ function handle(e) {
       var rowNumber2 = parseInt(p.row, 10);
       if (!rowNumber2 || rowNumber2 <= hRow + 1 - 1) return json({ ok: false, error: 'bad_row' });
       var fields = p.fields || {};
-      var map = { seatRow: idx.seatRow, seatNumber: idx.seatNo, entrance: idx.entrance, remarks: idx.remarks, checkedIn: idx.checkedIn };
+      var map = { seatRow: idx.seatRow, seatNumber: idx.seatNo, entrance: idx.entrance, plusOne: idx.plusOne, remarks: idx.remarks, checkedIn: idx.checkedIn };
       Object.keys(fields).forEach(function (k) {
         if (map[k] == null || map[k] < 0) return;
         if (k === 'checkedIn') {
