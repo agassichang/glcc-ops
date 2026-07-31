@@ -75,7 +75,7 @@ export default function Staff() {
       if (!data.ok || !data.guest) throw new Error()
       setGuests(gs => gs.map(x => (x.row === g.row ? data.guest : x)))
       setDrafts(dd => { const c = { ...dd }; delete c[g.row]; return c })
-    } catch { alert('Could not save ‚Äî please try again.') }
+    } catch { alert('Could not save — please try again.') }
     finally { setSaving(null) }
   }
 
@@ -84,7 +84,7 @@ export default function Staff() {
       <div className="cos-wide">
         <header className="staff-head">
           <div>
-            <p className="cos-kicker">What To Wear ¬∑ Fashion Show</p>
+            <p className="cos-kicker">What To Wear · Fashion Show</p>
             <h1 className="cos-h2">Staff Dashboard</h1>
           </div>
           <div className="staff-headbtns">
@@ -103,15 +103,15 @@ export default function Staff() {
         </div>
 
         {load === 'unconfigured' ? (
-          <p className="cos-note">Connect your guest sheet first ‚Äî add <code>EVENT_SHEET_WEBHOOK_URL</code> and <code>EVENT_SHEET_TOKEN</code> in Vercel, then redeploy.</p>
+          <p className="cos-note">Connect your guest sheet first — add <code>EVENT_SHEET_WEBHOOK_URL</code> and <code>EVENT_SHEET_TOKEN</code> in Vercel, then redeploy.</p>
         ) : load === 'error' ? (
-          <p className="cos-note">Couldn‚Äôt load the guest list. <button className="cos-link" onClick={refresh}>Retry</button></p>
+          <p className="cos-note">Couldn’t load the guest list. <button className="cos-link" onClick={refresh}>Retry</button></p>
         ) : load === 'loading' ? (
-          <p className="cos-note">Loading guests‚Ä¶</p>
+          <p className="cos-note">Loading guests…</p>
         ) : (
           <>
             <div className="staff-tools">
-              <input className="cos-field" placeholder="Search name, phone, company, category‚Ä¶" value={query} onChange={e => setQuery(e.target.value)} />
+              <input className="cos-field" placeholder="Search name, phone, company, category…" value={query} onChange={e => setQuery(e.target.value)} />
               <select className="cos-field cos-select" value={fRsvp} onChange={e => setFRsvp(e.target.value)}>
                 <option value="">All RSVP</option>
                 {rsvps.map(r => <option key={r} value={r}>{r}</option>)}
@@ -148,12 +148,12 @@ export default function Staff() {
                     <div className="staff-top">
                       <div>
                         <p className="staff-name">
-                          {g.name || '‚Äî'}
+                          {g.name || '—'}
                           {hasPlusOne(g.plusOne) && <span className="plus1" title="Bringing a plus one">+1</span>}
                         </p>
                         <p className="staff-sub">
-                          {g.category || '‚Äî'}{g.tier ? ` ¬∑ Tier ${g.tier}` : ''}{g.company ? ` ¬∑ ${g.company}` : ''} ¬∑ +{g.phone}
-                          {g.rsvp ? ` ¬∑ RSVP ${g.rsvp}` : ''}
+                          {g.category || '—'}{g.tier ? ` · Tier ${g.tier}` : ''}{g.company ? ` · ${g.company}` : ''} · +{g.phone}
+                          {g.rsvp ? ` · RSVP ${g.rsvp}` : ''}
                         </p>
                       </div>
                       <button
@@ -165,7 +165,7 @@ export default function Staff() {
                       </button>
                     </div>
 
-                    {g.checkedIn && <p className="staff-in">Checked in{g.checkInTime ? ` ¬∑ ${g.checkInTime}` : ''}</p>}
+                    {g.checkedIn && <p className="staff-in">Checked in{g.checkInTime ? ` · ${g.checkInTime}` : ''}</p>}
 
                     <div className="staff-grid">
                       <label>Seat Row<input className="cos-field" value={d.seatRow ?? ''} onChange={e => setField(g.row, 'seatRow', e.target.value)} /></label>
@@ -177,7 +177,7 @@ export default function Staff() {
                     {dirty(g.row) && (
                       <div className="staff-save">
                         <button className="cos-btn cos-sm" onClick={() => save(g)} disabled={saving === g.row}>
-                          {saving === g.row ? 'Saving‚Ä¶' : 'Save changes'}
+                          {saving === g.row ? 'Saving…' : 'Save changes'}
                         </button>
                       </div>
                     )}
