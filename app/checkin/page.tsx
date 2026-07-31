@@ -49,7 +49,7 @@ export default function CheckIn() {
 
       <main className="wtw-body">
         <p className="wtw-kicker">KLFW 2026</p>
-        <h1 className="wtw-title">10 Years of<br />What To Wear</h1>
+        <h1 className="wtw-title">Next Chapter —<br />What To Wear</h1>
         <div className="wtw-rule" />
 
         <p className="wtw-meta">
