@@ -122,7 +122,7 @@ code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0
 .login-btn { width: 100%; min-height: 46px; }
 
 /* ============================================================
-   Event check-in — COS-inspired light theme (full-screen layer).
+   Event check-in ‚Äî COS-inspired light theme (full-screen layer).
    ============================================================ */
 .cos {
   position: fixed; inset: 0; z-index: 100; overflow-y: auto;
@@ -191,14 +191,16 @@ code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0
 .staff-name { font-size: 17px; font-weight: 500; margin: 0 0 4px; }
 .staff-sub { font-size: 13px; color: #8a8a8a; margin: 0; line-height: 1.5; }
 .staff-in { font-size: 12px; color: #1a7f4b; margin: 10px 0 0; letter-spacing: 0.03em; }
-.staff-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 16px; }
-.staff-grid label { display: flex; flex-direction: column; gap: 6px; font-size: 11px; letter-spacing: 0.07em; text-transform: uppercase; color: #9a9a9a; }
-.staff-remarks { grid-column: 1 / -1; }
+/* minmax(0,‚Ä¶) so the inputs can shrink instead of overflowing the card. */
+.staff-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; margin-top: 16px; }
+.staff-grid label { display: flex; flex-direction: column; gap: 6px; font-size: 11px; letter-spacing: 0.07em; text-transform: uppercase; color: #9a9a9a; min-width: 0; }
+.staff-grid .cos-field { width: 100%; min-width: 0; }
+.staff-remarks, .staff-plusone { grid-column: 1 / -1; }
 .staff-save { margin-top: 14px; }
 
 @media (min-width: 720px) {
-  .staff-grid { grid-template-columns: 1fr 1fr 1fr 2fr; }
-  .staff-remarks { grid-column: auto; }
+  .staff-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 2fr); }
+  .staff-remarks, .staff-plusone { grid-column: auto; }
 }
 
 .pill { display: inline-block; font-size: 12px; padding: 2px 9px; border-radius: 6px; font-weight: 500; background: var(--surface2); color: var(--muted); }
@@ -256,7 +258,7 @@ code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0
 .agent.soon { opacity: 0.55; }
 .agent.soon .ava { border-style: dashed; }
 
-/* Six gentle wander paths — deterministic (no Math.random → no hydration mismatch). */
+/* Six gentle wander paths ‚Äî deterministic (no Math.random ‚Üí no hydration mismatch). */
 .agent.w0 { animation-name: w0; animation-duration: 19s; }
 .agent.w1 { animation-name: w1; animation-duration: 23s; }
 .agent.w2 { animation-name: w2; animation-duration: 21s; }
@@ -285,7 +287,7 @@ code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0
 .topbar, .nav-overlay { display: none; }
 
 /* ============================================================
-   MOBILE / TABLET (≤ 819px). Desktop (≥ 820px) is untouched.
+   MOBILE / TABLET (‚â§ 819px). Desktop (‚â• 820px) is untouched.
    ============================================================ */
 @media (max-width: 819px) {
   html, body { overflow-x: hidden; }
@@ -327,7 +329,7 @@ code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0
   }
   body.nav-open .nav-overlay { opacity: 1; pointer-events: auto; }
 
-  /* Nav links: ≥44px tap targets. */
+  /* Nav links: ‚â•44px tap targets. */
   .nav { gap: 4px; }
   .nav a { display: flex; align-items: center; min-height: 44px; padding: 0 12px; font-size: 15px; }
 
@@ -344,8 +346,8 @@ code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0
   /* Pipeline stages stack vertically. */
   .cols { flex-direction: column; gap: 16px; }
 
-  /* Tables → one stacked card per row (label : value). */
-  /* display:block on the table is key — otherwise it keeps table layout and
+  /* Tables ‚Üí one stacked card per row (label : value). */
+  /* display:block on the table is key ‚Äî otherwise it keeps table layout and
      sizes to its content, pushing right-aligned values off a narrow screen. */
   .tbl { display: block; border: none; background: none; border-radius: 0; }
   .tbl thead { display: none; }
@@ -372,14 +374,14 @@ code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0
     text-align: left;
   }
 
-  /* Buttons: ≥44px tall. */
+  /* Buttons: ‚â•44px tall. */
   .btn { min-height: 44px; }
 
   /* Agents office a touch shorter on small screens. */
   .office { height: 300px; }
 }
 
-/* ── What To Wear check-in — dark editorial theme (scoped, does not touch .cos / staff) ── */
+/* ‚îÄ‚îÄ What To Wear check-in ‚Äî dark editorial theme (scoped, does not touch .cos / staff) ‚îÄ‚îÄ */
 .wtw { position: fixed; inset: 0; z-index: 100; overflow-y: auto; background: #0c0b0a; color: #f3f0ea;
   font-family: var(--font, 'Inter', system-ui, -apple-system, sans-serif); -webkit-font-smoothing: antialiased; }
 .wtw *, .wtw *::before, .wtw *::after { box-sizing: border-box; }
@@ -432,5 +434,14 @@ code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0
   padding: 16px 0; border-top: 1px solid #232119; }
 .wtw-dl dt { font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase; color: #8c887f; }
 .wtw-dl dd { font-size: 18px; color: #f5f2ec; margin: 0; letter-spacing: 0.04em; }
+.wtw-note { font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: #8c887f;
+  line-height: 1.7; margin: -14px 0 28px; }
 .wtw-sad { font-size: 19px; letter-spacing: 0.02em; color: #f5f2ec; margin: 0 0 8px; }
+
+/* Staff: plus-one badge + filter (light .cos theme) */
+.plus1 { display: inline-block; margin-left: 8px; padding: 1px 7px; border: 1px solid #c9a24a;
+  border-radius: 999px; font-size: 11px; letter-spacing: 0.06em; color: #8a6d21; vertical-align: 2px; }
+.plus1-filter { border: 1px solid #d9d5cc; background: transparent; border-radius: 999px;
+  padding: 0 14px; height: 38px; font-size: 13px; color: #555; cursor: pointer; white-space: nowrap; }
+.plus1-filter.is-on { border-color: #c9a24a; background: #faf4e6; color: #8a6d21; }
 .wtw-muted { color: #8c887f; font-size: 14px; line-height: 1.6; margin: 0 0 26px; }
