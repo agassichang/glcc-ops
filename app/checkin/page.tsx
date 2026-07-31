@@ -1,6 +1,7 @@
 'use client'
 import { useState } from 'react'
 import { hasPlusOne } from '@/lib/event'
+import { HERO_IMAGE } from '@/lib/heroImage'
 
 type Guest = {
   name: string; seatRow: string; seatNumber: string; entrance: string
@@ -44,7 +45,7 @@ export default function CheckIn() {
   return (
     <div className="wtw">
       <div className="wtw-hero">
-        <img src="/header-visual.png" alt="What To Wear storefront" />
+        <img src={HERO_IMAGE} alt="What To Wear" />
       </div>
 
       <main className="wtw-body">
