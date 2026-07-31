@@ -5,7 +5,8 @@ import { HERO_IMAGE } from '@/lib/heroImage'
 
 type Guest = {
   name: string; seatRow: string; seatNumber: string; entrance: string
-  plusOne: string; checkInTime: string; category: string; company: string
+  plusOne: string; plusOneSeatRow: string; plusOneSeatNumber: string
+  checkInTime: string; category: string; company: string
 }
 
 export default function CheckIn() {
@@ -67,12 +68,13 @@ export default function CheckIn() {
               <div><dt>Seat Row</dt><dd>{guest.seatRow || '—'}</dd></div>
               <div><dt>Seat Number</dt><dd>{guest.seatNumber || '—'}</dd></div>
               {hasPlusOne(guest.plusOne) && (
-                <div><dt>Plus One</dt><dd>Yes</dd></div>
+                <>
+                  <div><dt>Plus One Seat Row</dt><dd>{guest.plusOneSeatRow || '—'}</dd></div>
+                  <div><dt>Plus One Seat Number</dt><dd>{guest.plusOneSeatNumber || '—'}</dd></div>
+                </>
               )}
             </dl>
-            {hasPlusOne(guest.plusOne) && (
-              <p className="wtw-note">Your guest is welcome to be seated with you.</p>
-            )}
+            <p className="wtw-note">We hope you enjoy the show.</p>
             <button className="wtw-btn wtw-btn-ghost" onClick={reset}>Check in another guest</button>
           </div>
         ) : status === 'notfound' ? (
