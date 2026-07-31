@@ -387,7 +387,7 @@ code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0
 .wtw *, .wtw *::before, .wtw *::after { box-sizing: border-box; }
 
 .wtw-hero { position: relative; width: 100%; height: 260px; overflow: hidden; border-radius: 0 0 28px 28px; }
-.wtw-hero img { width: 100%; height: 100%; object-fit: cover; object-position: center 42%; display: block; }
+.wtw-hero img { width: 100%; height: 100%; object-fit: cover; object-position: center; display: block; }
 .wtw-hero::after { content: ''; position: absolute; inset: 0;
   background: linear-gradient(to bottom, rgba(12,11,10,0) 68%, rgba(12,11,10,0.92) 100%); }
 
