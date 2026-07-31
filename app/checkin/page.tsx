@@ -53,9 +53,9 @@ export default function CheckIn() {
         <div className="wtw-rule" />
 
         <p className="wtw-meta">
-          Show Date ‚Äî 4 August 2026<br />
-          Show Time ‚Äî 3PM Sharp<br />
-          Guest Arrival ‚Äî 2PM
+          Show Date — 4 August 2026<br />
+          Show Time — 3PM Sharp<br />
+          Guest Arrival — 2PM
         </p>
 
         {status === 'found' && guest ? (
@@ -63,8 +63,8 @@ export default function CheckIn() {
             <p className="wtw-ok">{already ? 'Already Checked In' : 'Checked In'}</p>
             <p className="wtw-name">{guest.name}</p>
             <dl className="wtw-dl">
-              <div><dt>Seat Row</dt><dd>{guest.seatRow || '‚Äî'}</dd></div>
-              <div><dt>Seat Number</dt><dd>{guest.seatNumber || '‚Äî'}</dd></div>
+              <div><dt>Seat Row</dt><dd>{guest.seatRow || '—'}</dd></div>
+              <div><dt>Seat Number</dt><dd>{guest.seatNumber || '—'}</dd></div>
               {hasPlusOne(guest.plusOne) && (
                 <div><dt>Plus One</dt><dd>Yes</dd></div>
               )}
@@ -77,7 +77,7 @@ export default function CheckIn() {
         ) : status === 'notfound' ? (
           <div className="wtw-result">
             <p className="wtw-sad">Please see our reception team.</p>
-            <p className="wtw-muted">We couldn‚Äôt find that number on the guest list.</p>
+            <p className="wtw-muted">We couldn’t find that number on the guest list.</p>
             <button className="wtw-btn wtw-btn-ghost" onClick={reset}>Try again</button>
           </div>
         ) : (
@@ -97,7 +97,7 @@ export default function CheckIn() {
                 />
               </div>
               <button className="wtw-btn" type="submit" disabled={status === 'loading' || digitsv.replace(/[^0-9]/g, '').length < 6}>
-                {status === 'loading' ? 'Checking‚Ä¶' : 'Check In'}
+                {status === 'loading' ? 'Checking…' : 'Check In'}
               </button>
               {status === 'error' && <p className="wtw-err">Something went wrong. Please see the reception team.</p>}
             </form>
