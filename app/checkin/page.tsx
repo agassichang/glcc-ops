@@ -1,6 +1,6 @@
 'use client'
 import { useState } from 'react'
-import { hasPlusOne } from '@/lib/event'
+import { hasPlusOne, splitSeat } from '@/lib/event'
 import { HERO_IMAGE } from '@/lib/heroImage'
 
 type Guest = {
@@ -43,6 +43,9 @@ export default function CheckIn() {
     setDigits(''); setGuest(null); setStatus('idle'); setAlready(false)
   }
 
+  const seat = splitSeat(guest?.seatRow, guest?.seatNumber)
+  const poSeat = splitSeat(guest?.plusOneSeatRow, guest?.plusOneSeatNumber)
+
   return (
     <div className="wtw">
       <div className="wtw-hero">
@@ -65,12 +68,12 @@ export default function CheckIn() {
             <p className="wtw-ok">{already ? 'Already Checked In' : 'Checked In'}</p>
             <p className="wtw-name">{guest.name}</p>
             <dl className="wtw-dl">
-              <div><dt>Seat Row</dt><dd>{guest.seatRow || '—'}</dd></div>
-              <div><dt>Seat Number</dt><dd>{guest.seatNumber || '—'}</dd></div>
+              <div><dt>Seat Row</dt><dd>{seat.row || '—'}</dd></div>
+              <div><dt>Seat Number</dt><dd>{seat.number || '—'}</dd></div>
               {hasPlusOne(guest.plusOne) && (
                 <>
-                  <div><dt>Plus One Seat Row</dt><dd>{guest.plusOneSeatRow || '—'}</dd></div>
-                  <div><dt>Plus One Seat Number</dt><dd>{guest.plusOneSeatNumber || '—'}</dd></div>
+                  <div><dt>Plus One Seat Row</dt><dd>{poSeat.row || '—'}</dd></div>
+                  <div><dt>Plus One Seat Number</dt><dd>{poSeat.number || '—'}</dd></div>
                 </>
               )}
             </dl>
