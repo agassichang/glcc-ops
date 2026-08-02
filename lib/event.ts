@@ -22,6 +22,17 @@ export type Guest = {
   remarks: string
 }
 
+// The sheet now stores a seat as one combined value ("J31" = row J, seat 31).
+// Split it back out for display. If a separate row column is ever present again
+// its value wins, and anything unparseable is shown as-is under the number.
+export const splitSeat = (row: unknown, combined: unknown) => {
+  const r = String(row ?? '').trim()
+  const c = String(combined ?? '').trim()
+  if (r) return { row: r, number: c }
+  const m = c.match(/^([A-Za-z]+)\s*-?\s*(\d*)$/)
+  return m ? { row: m[1].toUpperCase(), number: m[2] } : { row: '', number: c }
+}
+
 // A guest counts as bringing a plus one unless the cell is blank or an explicit
 // negative. Anything else (Yes, 1, or the companion's name) counts.
 export const hasPlusOne = (v: unknown) => {
