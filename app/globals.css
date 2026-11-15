@@ -400,8 +400,10 @@ code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0
   text-transform: uppercase; color: #f5f2ec; margin: 0 0 22px; }
 .wtw-rule { width: 54px; height: 1px; background: #c9a24a; margin: 0 0 30px; }
 
-.wtw-meta { font-size: 12px; letter-spacing: 0.2em; text-transform: uppercase; color: #8c887f;
-  line-height: 2.15; margin: 0 0 24px; }
+/* One line per detail: no wrapping, and the size scales with screen width so the
+   longest line (the venue) still fits on small phones. */
+.wtw-meta { font-size: clamp(9px, 2.7vw, 12px); letter-spacing: 0.08em; text-transform: uppercase; color: #8c887f;
+  line-height: 2.15; margin: 0 0 24px; white-space: nowrap; }
 
 .wtw-checkin { font-size: 13px; letter-spacing: 0.28em; text-transform: uppercase; font-weight: 600;
   color: #f5f2ec; margin: 0 0 20px; }
