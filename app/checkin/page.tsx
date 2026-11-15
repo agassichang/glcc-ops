@@ -53,15 +53,14 @@ export default function CheckIn() {
       </div>
 
       <main className="wtw-body">
-        <p className="wtw-kicker">KLFW 2026</p>
-        <h1 className="wtw-title">Next Chapter —<br />What To Wear</h1>
-        <div className="wtw-rule" />
-
+        <h1 className="sr-only">RE:ORIENT 东方新序 · Spring 27 Fashion Show</h1>
         <p className="wtw-meta">
-          Show Date — 4 August 2026<br />
-          Show Time — 3PM Sharp<br />
-          Guest Arrival — 2PM
+          Show Date — Wednesday, 18 November 2026<br />
+          Show Time — 11:30AM<br />
+          Guest Arrival — From 10:30AM<br />
+          Venue — HABIB Landmark, Level 1, Jalan Bunus
         </p>
+        <div className="wtw-rule" />
 
         {status === 'found' && guest ? (
           <div className="wtw-result">
